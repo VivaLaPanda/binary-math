@@ -83,6 +83,22 @@ func TestAdd(t *testing.T) {
 	}
 }
 
+func TestSub(t *testing.T) {
+	actual1 := sub(testArr1, testArr2)
+	expected1 := []bool{false, false, true}
+
+	if !(reflect.DeepEqual(actual1, expected1)) {
+		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
+	}
+
+	actual2 := sub(testArr3, testArr1)
+	expected2 := []bool{true, false, true, true, true, true, true}
+
+	if !(reflect.DeepEqual(actual2, expected2)) {
+		t.Errorf("Test failed: %v != %v\n", actual2, expected2)
+	}
+}
+
 func TestExcOr(t *testing.T) {
 	actual1 := excOr(false, false, true)
 	expected1 := true
@@ -128,5 +144,61 @@ func TestMult(t *testing.T) {
 
 	if !(reflect.DeepEqual(actual2, expected2)) {
 		t.Errorf("Test failed: %v != %v\n", actual2, expected2)
+	}
+}
+
+func TestDec2Bin(t *testing.T) {
+	actual1 := dec2bin(4)
+	expected1 := []bool{false, false, true, false}
+
+	if !(reflect.DeepEqual(actual1, expected1)) {
+		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
+	}
+
+	actual2 := dec2bin(0)
+	expected2 := []bool{false}
+
+	if !(reflect.DeepEqual(actual2, expected2)) {
+		t.Errorf("Test failed: %v != %v\n", actual2, expected2)
+	}
+}
+
+func TestBin2Dec(t *testing.T) {
+	actual1 := bin2dec([]bool{false, false, true})
+	expected1 := 4
+
+	if !(reflect.DeepEqual(actual1, expected1)) {
+		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
+	}
+
+	actual2 := bin2dec([]bool{false})
+	expected2 := 0
+
+	if !(reflect.DeepEqual(actual2, expected2)) {
+		t.Errorf("Test failed: %v != %v\n", actual2, expected2)
+	}
+}
+
+func TestDivide(t *testing.T) {
+	actual1a, actual1b := divide(testArr2, testArr1)
+	expected1a, expected1b := []bool{true, true}, []bool{false}
+
+	if !(reflect.DeepEqual(actual1a, expected1a)) {
+		t.Errorf("Test failed: %v != %v\n", actual1a, expected1a)
+	}
+
+	if !(reflect.DeepEqual(actual1b, expected1b)) {
+		t.Errorf("Test failed: %v != %v\n", actual1b, expected1b)
+	}
+
+	actual2a, actual2b := divide(testArr3, testArr1)
+	expected2a, expected2b := []bool{true, true, true, true, true, true}, []bool{true}
+
+	if !(reflect.DeepEqual(actual2a, expected2a)) {
+		t.Errorf("Test failed: %v != %v\n", actual2a, expected2a)
+	}
+
+	if !(reflect.DeepEqual(actual2b, expected2b)) {
+		t.Errorf("Test failed: %v != %v\n", actual2b, expected2b)
 	}
 }
