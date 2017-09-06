@@ -22,7 +22,7 @@ func Divide(X int, Y int) (int, int) {
 
 func dec2bin(n int) []bool {
 	if n == 0 {
-		return []bool{}
+		return []bool{false}
 	}
 	m := n / 2
 	A := dec2bin(m)
@@ -30,18 +30,47 @@ func dec2bin(n int) []bool {
 	return append([]bool{fbit != 0}, A...)
 }
 
-func bin2dec(n []bool) int {
-	if len(n) <= 3 {
-		return binDecMap(n)
+func bin2dec(A []bool) int {
+	if len(A) == 0 {
+		return 0
 	}
 
-	temp1, temp2 := divide(n, []bool{false, true, false, true})
-	return bin2dec(trim(temp1)) + binDecMap(trim(temp2))
+	var val int
+	if A[0] {
+		val = 1
+	} else {
+		val = 0
+	}
+
+	pow := 2
+	for i := 1; i < len(A); i++ {
+		var currVal int
+		if A[i] {
+			currVal = 1
+		} else {
+			currVal = 0
+		}
+
+		val = val + pow*currVal
+		pow = pow * 2
+	}
+
+	return val
 }
+
+// DEPRECATED
+// func bin2dec1(n []bool) int {
+// 	if len(n) <= 3 {
+// 		return binDecMap(trim(n))
+// 	}
+//
+// 	temp1, temp2 := divide(n, []bool{false, true, false, true})
+// 	return bin2dec1(trim(temp1)) + binDecMap(trim(temp2))
+// }
 
 func divide(X []bool, Y []bool) (q []bool, r []bool) {
 	if zero(X) {
-		return emptySlice, emptySlice
+		return zeroSlice, zeroSlice
 	}
 
 	q, r = divide(div2(X), Y)
@@ -57,7 +86,12 @@ func divide(X []bool, Y []bool) (q []bool, r []bool) {
 	return q, r
 }
 
+// Faster than deepeq for production code
 func sliceEq(a []bool, b []bool) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
 	for i, aElem := range a {
 		if aElem != b[i] {
 			return false
@@ -67,38 +101,104 @@ func sliceEq(a []bool, b []bool) bool {
 	return true
 }
 
-func binDecMap(v []bool) int {
-	switch {
-	case sliceEq(v, []bool{}):
-		return '0'
-	case sliceEq(v, []bool{false}):
-		return '0'
-	case sliceEq(v, []bool{true}):
-		return '1'
-	case sliceEq(v, []bool{false, true}):
-		return '2'
-	case sliceEq(v, []bool{true, true}):
-		return '3'
-	case sliceEq(v, []bool{false, false, true}):
-		return '4'
-	case sliceEq(v, []bool{true, false, true}):
-		return '5'
-	case sliceEq(v, []bool{false, true, true}):
-		return '6'
-	case sliceEq(v, []bool{true, true, true}):
-		return '7'
-	case sliceEq(v, []bool{false, false, false, true}):
-		return '8'
-	case sliceEq(v, []bool{true, false, false, true}):
-		return '9'
+// DEPRECATED
+// func binDecMap(v []bool) int {
+// 	switch {
+// 	case sliceEq(v, []bool{}):
+// 		return '0'
+// 	case sliceEq(v, []bool{false}):
+// 		return '0'
+// 	case sliceEq(v, []bool{true}):
+// 		return '1'
+// 	case sliceEq(v, []bool{false, true}):
+// 		return '2'
+// 	case sliceEq(v, []bool{true, true}):
+// 		return '3'
+// 	case sliceEq(v, []bool{false, false, true}):
+// 		return '4'
+// 	case sliceEq(v, []bool{true, false, true}):
+// 		return '5'
+// 	case sliceEq(v, []bool{false, true, true}):
+// 		return '6'
+// 	case sliceEq(v, []bool{true, true, true}):
+// 		return '7'
+// 	case sliceEq(v, []bool{false, false, false, true}):
+// 		return '8'
+// 	case sliceEq(v, []bool{true, false, false, true}):
+// 		return '9'
+// 	}
+//
+// 	panic("FATAL ERROR: Map reached unreachable code.")
+// }
+
+func equalLengthPad(ARef []bool, BRef []bool) (A []bool, B []bool, N int) {
+	// Make a copy of the slices passed in
+	A = make([]bool, len(ARef))
+	copy(A, ARef)
+	B = make([]bool, len(BRef))
+	copy(B, BRef)
+
+	// Padding to equal length
+	n := len(A)
+	m := len(B)
+	if n < m {
+		dif := len(B) - len(A)
+		for i := 0; i < dif; i++ {
+			A = append(A, false)
+		}
+	} else {
+		dif := len(A) - len(B)
+		for i := 0; i < dif; i++ {
+			B = append(B, false)
+		}
 	}
 
-	panic("FATAL ERROR: Map reached unreachable code.")
+	if n > m {
+		N = n
+	} else {
+		N = m
+	}
+
+	return A, B, N
 }
 
-// TODO: Implement
-func sub(A []bool, B []bool) (diff []bool) {
-	return []bool{false}
+func twosCompliment(ARef []bool) (A []bool) {
+	// Make a copy of the slices passed in
+	A = make([]bool, len(ARef))
+	copy(A, ARef)
+
+	// 2's compliment
+	// Inverting B
+	for i, elem := range A {
+		A[i] = !elem
+	}
+	// Add 1
+	return add(A, oneSlice)
+}
+
+func sub(ARef []bool, BRef []bool) (diff []bool) {
+	A, B, n := equalLengthPad(ARef, BRef)
+
+	// Add one extra 0 in front of each to make sure 2compliment has sign bit
+	A = append(A, false)
+	B = append(B, false)
+
+	signCheck := compare(A, B)
+	if signCheck == 0 {
+		return zeroSlice
+	}
+
+	B = twosCompliment(B)
+	diff = add(A, B)
+
+	// Get rid of any overflow if it happened
+	diff = diff[:n+1]
+
+	if diff[n] == true {
+		return trim(twosCompliment(diff))
+	} else {
+		return trim(diff)
+	}
 }
 
 func compare(A []bool, B []bool) int {
@@ -110,7 +210,7 @@ func compare(A []bool, B []bool) int {
 		return 2
 	}
 
-	for i, _ := range A1 {
+	for i := range A1 {
 		if A1[i] && !A2[i] {
 			return 1
 		} else if !A1[i] && A2[i] {
@@ -200,33 +300,7 @@ func even(X []bool) bool {
 }
 
 func add(A []bool, B []bool) []bool {
-	// Make a copy of the slices passed in
-	A1 := make([]bool, len(A))
-	copy(A1, A)
-	B1 := make([]bool, len(B))
-	copy(B1, B)
-
-	// Padding to equal length
-	n := len(A1)
-	m := len(B1)
-	if n < m {
-		dif := len(B1) - len(A1)
-		for i := 0; i < dif; i++ {
-			A1 = append(A1, false)
-		}
-	} else {
-		dif := len(A1) - len(B1)
-		for i := 0; i < dif; i++ {
-			B1 = append(B1, false)
-		}
-	}
-
-	var N int
-	if n > m {
-		N = n
-	} else {
-		N = m
-	}
+	A1, B1, N := equalLengthPad(A, B)
 
 	C := []bool{}
 	carry := false
