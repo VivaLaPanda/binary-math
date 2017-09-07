@@ -6,4 +6,3 @@ install:
 
 script:
  - go test -v ./...
- - ./cov_test.sh
