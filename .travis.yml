@@ -1,9 +1,4 @@
 language: go
-go:
- - 1.x
- - 1.4.x
- - 1.5.x
- - master
 
 install:
   # Install all external dependencies, ensuring they are updated.
@@ -11,3 +6,4 @@ install:
 
 script:
  - go test -v ./...
+ - ./cov_test.sh
