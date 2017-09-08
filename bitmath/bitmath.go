@@ -58,6 +58,38 @@ func bin2dec(A []bool) int {
 	return val
 }
 
+// Computes x^y
+func exp(x []bool, y []bool) []bool {
+	if sliceEq(y, zeroSlice) || sliceEq(y, emptySlice) {
+		return oneSlice
+	}
+
+	z := exp(x, div2(y))
+	if even(y) {
+		return mult(z, z)
+	}
+
+	return mult(x, mult(z, z))
+}
+
+// Takes a and b and finds integers s.t. d = gcd(a,b) and ax + by = d
+// Currently cannot distriguish negative answers properly.
+func egcd(a []bool, b []bool) (x []bool, y []bool, d []bool, isNegative bool) {
+	if zero(b) {
+		return oneSlice, zeroSlice, a, false
+	}
+
+	q, r := divide(a, b)
+	x, y, d, isNegative = egcd(b, r)
+	if isNegative {
+		x = add(x, mult(q, y))
+		isNegative = false
+	} else {
+		x, isNegative = sub(x, mult(q, y))
+	}
+	return y, x, d, isNegative
+}
+
 // DEPRECATED
 // func bin2dec1(n []bool) int {
 // 	if len(n) <= 3 {
@@ -80,7 +112,7 @@ func divide(X []bool, Y []bool) (q []bool, r []bool) {
 		r = add(r, oneSlice)
 	}
 	if !(compare(r, Y) == 2) {
-		r = sub(r, Y)
+		r, _ = sub(r, Y)
 		q = add(q, oneSlice)
 	}
 	return q, r
@@ -176,7 +208,7 @@ func twosCompliment(ARef []bool) (A []bool) {
 	return add(A, oneSlice)
 }
 
-func sub(ARef []bool, BRef []bool) (diff []bool) {
+func sub(ARef []bool, BRef []bool) (diff []bool, isNegative bool) {
 	A, B, n := equalLengthPad(ARef, BRef)
 
 	// Add one extra 0 in front of each to make sure 2compliment has sign bit
@@ -185,7 +217,7 @@ func sub(ARef []bool, BRef []bool) (diff []bool) {
 
 	signCheck := compare(A, B)
 	if signCheck == 0 {
-		return zeroSlice
+		return zeroSlice, false
 	}
 
 	B = twosCompliment(B)
@@ -195,9 +227,9 @@ func sub(ARef []bool, BRef []bool) (diff []bool) {
 	diff = diff[:n+1]
 
 	if diff[n] == true {
-		return trim(twosCompliment(diff))
+		return trim(twosCompliment(diff)), true
 	} else {
-		return trim(diff)
+		return trim(diff), false
 	}
 }
 
