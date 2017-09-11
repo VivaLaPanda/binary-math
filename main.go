@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	bmath "github.com/vivalapanda/binary-math/bitmath"
+	bmath "github.com/VivaLaPanda/binary-math/bitmath"
 )
 
 func main() {
@@ -51,7 +51,7 @@ func main() {
 			stopCode = true
 		default:
 			fmt.Println("I'm sorry, I didn't understand that...")
-			fmt.Printf("Usage:\n  Kill: 'k'\n  Force Poll: 'p'\n  Debug Poll: 'd'\n")
+			fmt.Printf("Usage:\n  A^B - C^D: '1'\n  A^B / C^D: '2'\n  sum(1/n, n = 1 to A): '3'\n  Kill: '4'\n")
 		}
 	}
 }
