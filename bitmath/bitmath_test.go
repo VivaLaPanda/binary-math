@@ -10,6 +10,62 @@ var testArr2 = []bool{false, true, true}
 var testArr3 = []bool{true, true, true, true, true, true, true}
 var testArr4 = []bool{false}
 
+func TestIntMult(t *testing.T) {
+	actual1 := Mult(2, 3)
+	expected1 := 6
+
+	if !(reflect.DeepEqual(actual1, expected1)) {
+		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
+	}
+}
+
+func TestIntAdd(t *testing.T) {
+	actual1 := Add(2, 3)
+	expected1 := 5
+
+	if !(reflect.DeepEqual(actual1, expected1)) {
+		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
+	}
+}
+
+func TestIntSub(t *testing.T) {
+	actual1 := Sub(5, 1)
+	expected1 := 4
+
+	if !(reflect.DeepEqual(actual1, expected1)) {
+		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
+	}
+
+	actual2 := Sub(1, 5)
+	expected2 := -4
+
+	if actual2 != expected2 {
+		t.Errorf("Test failed: %v != %v\n", actual2, expected2)
+	}
+}
+
+func TestIntExp(t *testing.T) {
+	actual1 := Exp(2, 3)
+	expected1 := 8
+
+	if !(reflect.DeepEqual(actual1, expected1)) {
+		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
+	}
+}
+
+func TestIntDivide(t *testing.T) {
+	actual1q, actual1r := Divide(10, 2)
+	expected1q, expected1r := 5, 0
+
+	if !(reflect.DeepEqual(actual1q, expected1q)) {
+		t.Errorf("Test failed: %v != %v\n", actual1q, expected1q)
+	}
+
+	if !(reflect.DeepEqual(actual1r, expected1r)) {
+		t.Errorf("Test failed: %v != %v\n", actual1r, expected1r)
+	}
+}
+
 func TestShift(t *testing.T) {
 	actual1 := shift(testArr1, 1)
 	expected1 := []bool{false, false, true}
@@ -148,14 +204,14 @@ func TestMult(t *testing.T) {
 }
 
 func TestDec2Bin(t *testing.T) {
-	actual1 := dec2bin(4)
+	actual1 := Dec2bin(4)
 	expected1 := []bool{false, false, true, false}
 
 	if !(reflect.DeepEqual(actual1, expected1)) {
 		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
 	}
 
-	actual2 := dec2bin(0)
+	actual2 := Dec2bin(0)
 	expected2 := []bool{false}
 
 	if !(reflect.DeepEqual(actual2, expected2)) {
@@ -164,14 +220,14 @@ func TestDec2Bin(t *testing.T) {
 }
 
 func TestBin2Dec(t *testing.T) {
-	actual1 := bin2dec([]bool{false, false, true})
+	actual1 := Bin2dec([]bool{false, false, true})
 	expected1 := 4
 
 	if !(reflect.DeepEqual(actual1, expected1)) {
 		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
 	}
 
-	actual2 := bin2dec([]bool{false})
+	actual2 := Bin2dec([]bool{false})
 	expected2 := 0
 
 	if !(reflect.DeepEqual(actual2, expected2)) {
