@@ -5,32 +5,87 @@ var emptySlice = []bool{}
 var zeroSlice = []bool{false}
 var oneSlice = []bool{true}
 
+// Problems
+
+func ProblemOne(a []bool, b []bool, c []bool, d []bool) (diff []bool, isNegative bool) {
+	aToTheB := exp(a, b)
+	cToTheD := exp(c, d)
+	return sub(aToTheB, cToTheD)
+}
+
+func ProblemTwo(a []bool, b []bool, c []bool, d []bool) (q []bool, r []bool) {
+	aToTheB := exp(a, b)
+	cToTheD := exp(c, d)
+
+	return divide(aToTheB, cToTheD)
+}
+
+func ProblemThree(a []bool) (numerator []bool, denominator []bool) {
+	numerator, denominator = fractalSum(oneSlice, oneSlice, a)
+
+	_, _, reducer, _ := egcd(numerator, denominator)
+
+	numerator, _ = divide(numerator, reducer)
+	denominator, _ = divide(denominator, reducer)
+
+	return numerator, denominator
+}
+
+func fractalSum(currentDenom []bool, commonDenom []bool, a []bool) (numeratorSum []bool, finalDenom []bool) {
+	commonDenom = mult(commonDenom, currentDenom)
+	if compare(currentDenom, a) != 0 {
+		numeratorSum, finalDenom = fractalSum(add(currentDenom, oneSlice), commonDenom, a)
+	} else {
+		numeratorSum = zeroSlice
+		finalDenom = commonDenom
+	}
+	numerator, _ := divide(finalDenom, currentDenom)
+	numeratorSum = add(numeratorSum, numerator)
+
+	return numeratorSum, finalDenom
+}
+
+// Actual core computations
 func Mult(X int, Y int) int {
-	X1 := dec2bin(X)
-	X2 := dec2bin(Y)
-	return bin2dec(mult(X1, X2))
+	X1 := Dec2bin(X)
+	X2 := Dec2bin(Y)
+	return Bin2dec(mult(X1, X2))
 }
 
 func Add(A int, B int) int {
-	return bin2dec(add(dec2bin(A), dec2bin(B)))
+	return Bin2dec(add(Dec2bin(A), Dec2bin(B)))
+}
+
+func Sub(A int, B int) (diff int) {
+	binDiff, isNegative := sub(Dec2bin(A), Dec2bin(B))
+	diff = Bin2dec(binDiff)
+	if isNegative {
+		diff = -1 * diff
+	}
+
+	return diff
+}
+
+func Exp(A int, B int) int {
+	return Bin2dec(exp(Dec2bin(A), Dec2bin(B)))
 }
 
 func Divide(X int, Y int) (int, int) {
-	q, r := divide(dec2bin(X), dec2bin(Y))
-	return bin2dec(q), bin2dec(r)
+	q, r := divide(Dec2bin(X), Dec2bin(Y))
+	return Bin2dec(q), Bin2dec(r)
 }
 
-func dec2bin(n int) []bool {
+func Dec2bin(n int) []bool {
 	if n == 0 {
 		return []bool{false}
 	}
 	m := n / 2
-	A := dec2bin(m)
+	A := Dec2bin(m)
 	fbit := n % 2
 	return append([]bool{fbit != 0}, A...)
 }
 
-func bin2dec(A []bool) int {
+func Bin2dec(A []bool) int {
 	if len(A) == 0 {
 		return 0
 	}
@@ -91,13 +146,13 @@ func egcd(a []bool, b []bool) (x []bool, y []bool, d []bool, isNegative bool) {
 }
 
 // DEPRECATED
-// func bin2dec1(n []bool) int {
+// func Bin2dec1(n []bool) int {
 // 	if len(n) <= 3 {
 // 		return binDecMap(trim(n))
 // 	}
 //
 // 	temp1, temp2 := divide(n, []bool{false, true, false, true})
-// 	return bin2dec1(trim(temp1)) + binDecMap(trim(temp2))
+// 	return Bin2dec1(trim(temp1)) + binDecMap(trim(temp2))
 // }
 
 func divide(X []bool, Y []bool) (q []bool, r []bool) {
