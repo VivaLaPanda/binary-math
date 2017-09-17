@@ -1,5 +1,7 @@
 package bitmath
 
+import "math/rand"
+
 // Useful slices
 var emptySlice = []bool{}
 var zeroSlice = []bool{false}
@@ -7,7 +9,12 @@ var oneSlice = []bool{true}
 
 // Problems
 
+//
 // Actual core computations
+//
+
+// --- Integer Operations --
+
 func IntMult(X int, Y int) int {
 	X1 := Dec2bin(X)
 	X2 := Dec2bin(Y)
@@ -73,6 +80,76 @@ func Bin2dec(A []bool) int {
 	}
 
 	return val
+}
+
+// --- Binary Operations --
+
+func NBitPrime(n []bool, confidence []bool) (prime []bool) {
+	for isPrime := false; !isPrime; {
+		prime = make([]bool, 0)
+		for i := zeroSlice; compare(i, n) == 2; i = Add(i, oneSlice) {
+			randbit := (rand.Intn(2) == 1)
+			prime = append(prime, randbit)
+		}
+
+		prime = prime[2:]
+		prime = append(append(oneSlice, prime...), oneSlice...)
+
+		isPrime = PrimalityThree(prime, confidence)
+	}
+
+	return prime
+}
+
+func PrimalityThree(n []bool, confidence []bool) (isPrime bool) {
+	_, divisible2 := Divide(n, Dec2bin(2))
+	_, divisible3 := Divide(n, Dec2bin(3))
+	_, divisible5 := Divide(n, Dec2bin(5))
+	_, divisible7 := Divide(n, Dec2bin(7))
+
+	if zero(divisible2) || zero(divisible3) || zero(divisible5) || zero(divisible7) {
+		return false
+	}
+
+	return primalityTwo(n, confidence)
+}
+
+func primalityTwo(n []bool, confidence []bool) (isPrime bool) {
+	for i := zeroSlice; compare(i, confidence) == 2; i = Add(i, oneSlice) {
+		if !primality(n) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func primality(n []bool) (isPrime bool) {
+	a := randBin(oneSlice, n)
+	nMinusOne, _ := Sub(n, oneSlice)
+	_, r := Divide(Exp(a, nMinusOne), n)
+
+	return compare(r, oneSlice) == 0
+}
+
+func randBin(min []bool, max []bool) (randNum []bool) {
+	randNum = make([]bool, len(max))
+
+	for i := range max {
+		// Set all bits in rand to random bools (gen number 0/1 and then cast to bool)
+		randbit := (rand.Intn(2) == 1)
+		randNum[i] = randbit
+	}
+
+	// Ensure the number is smaller than max
+	_, randNum = Divide(randNum, max)
+
+	// If the number is smaller than min (really unlikely) just recalc
+	if compare(randNum, min) == 2 {
+		return randBin(min, max)
+	} else {
+		return randNum
+	}
 }
 
 // Computes x^y

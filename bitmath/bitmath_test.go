@@ -104,19 +104,42 @@ func TestShift(t *testing.T) {
 	}
 }
 
-func TestZero(t *testing.T) {
-	actual1 := zero(testArr1)
+func TestNbitPrime(t *testing.T) {
+	actual1 := Bin2dec(NBitPrime(Dec2bin(8), Dec2bin(10)))
+	expected1 := 149
+
+	if actual1 != expected1 {
+		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
+	}
+
+	actual2 := Bin2dec(NBitPrime(Dec2bin(10), Dec2bin(10)))
+	expected2 := 617
+
+	if actual2 != expected2 {
+		t.Errorf("Test failed: %v != %v\n", actual2, expected2)
+	}
+}
+
+func TestPrimality(t *testing.T) {
+	actual1 := PrimalityThree(Dec2bin(100), Dec2bin(10))
 	expected1 := false
 
 	if actual1 != expected1 {
 		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
 	}
 
-	actual2 := zero(testArr4)
+	actual2 := PrimalityThree(Dec2bin(23), Dec2bin(20))
 	expected2 := true
 
 	if actual2 != expected2 {
 		t.Errorf("Test failed: %v != %v\n", actual2, expected2)
+	}
+
+	actual3 := PrimalityThree(Dec2bin(437), Dec2bin(10))
+	expected3 := false
+
+	if actual3 != expected3 {
+		t.Errorf("Test failed: %v != %v\n", actual3, expected3)
 	}
 }
 
