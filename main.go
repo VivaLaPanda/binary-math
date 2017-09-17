@@ -6,8 +6,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
-	bmath "github.com/VivaLaPanda/binary-math/bitmath"
 )
 
 func main() {
@@ -68,34 +66,4 @@ func parseArgs(argText string) []int {
 	}
 
 	return intArr
-}
-
-func problem1(a int, b int, c int, d int) (diff int) {
-	binDiff, isNegative := bmath.ProblemOne(
-		bmath.Dec2bin(a),
-		bmath.Dec2bin(b),
-		bmath.Dec2bin(c),
-		bmath.Dec2bin(d))
-	diff = bmath.Bin2dec(binDiff)
-	if isNegative {
-		diff = -1 * diff
-	}
-
-	return diff
-}
-
-func problem2(a int, b int, c int, d int) (q int, r int) {
-	binQ, binR := bmath.ProblemTwo(
-		bmath.Dec2bin(a),
-		bmath.Dec2bin(b),
-		bmath.Dec2bin(c),
-		bmath.Dec2bin(d))
-	return bmath.Bin2dec(binQ), bmath.Bin2dec(binR)
-}
-
-func problem3(a int) (numerator int, denum int) {
-	binNum, binDenum := bmath.ProblemThree(bmath.Dec2bin(a))
-	numerator, denum = bmath.Bin2dec(binNum), bmath.Bin2dec(binDenum)
-
-	return numerator, denum
 }

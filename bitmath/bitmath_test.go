@@ -1,6 +1,7 @@
 package bitmath
 
 import (
+	"math"
 	"reflect"
 	"testing"
 )
@@ -11,50 +12,78 @@ var testArr3 = []bool{true, true, true, true, true, true, true}
 var testArr4 = []bool{false}
 
 func TestIntMult(t *testing.T) {
-	actual1 := Mult(2, 3)
+	actual1 := IntMult(2, 3)
 	expected1 := 6
 
 	if !(reflect.DeepEqual(actual1, expected1)) {
 		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
 	}
+
+	actual2 := IntMult(100, 100)
+	expected2 := 10000
+
+	if !(reflect.DeepEqual(actual2, expected2)) {
+		t.Errorf("Test failed: %v != %v\n", actual2, expected2)
+	}
 }
 
 func TestIntAdd(t *testing.T) {
-	actual1 := Add(2, 3)
+	actual1 := IntAdd(2, 3)
 	expected1 := 5
 
 	if !(reflect.DeepEqual(actual1, expected1)) {
 		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
 	}
+
+	actual2 := IntAdd(math.MaxInt64/3, math.MaxInt64/3)
+	expected2 := (math.MaxInt64 / 3) + (math.MaxInt64 / 3)
+
+	if !(reflect.DeepEqual(actual2, expected2)) {
+		t.Errorf("Test failed: %v != %v\n", actual2, expected2)
+	}
 }
 
 func TestIntSub(t *testing.T) {
-	actual1 := Sub(5, 1)
+	actual1 := IntSub(5, 1)
 	expected1 := 4
 
 	if !(reflect.DeepEqual(actual1, expected1)) {
 		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
 	}
 
-	actual2 := Sub(1, 5)
+	actual2 := IntSub(1, 5)
 	expected2 := -4
+
+	if actual2 != expected2 {
+		t.Errorf("Test failed: %v != %v\n", actual2, expected2)
+	}
+
+	actual3 := IntSub(math.MaxInt64, 1)
+	expected3 := math.MaxInt64 - 1
+
+	if actual3 != expected3 {
+		t.Errorf("Test failed: %v != %v\n", actual3, expected3)
+	}
+}
+
+func TestIntExp(t *testing.T) {
+	actual1 := IntExp(2, 3)
+	expected1 := 8
+
+	if !(reflect.DeepEqual(actual1, expected1)) {
+		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
+	}
+
+	actual2 := IntExp(10, 11)
+	expected2 := 100000000000
 
 	if actual2 != expected2 {
 		t.Errorf("Test failed: %v != %v\n", actual2, expected2)
 	}
 }
 
-func TestIntExp(t *testing.T) {
-	actual1 := Exp(2, 3)
-	expected1 := 8
-
-	if !(reflect.DeepEqual(actual1, expected1)) {
-		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
-	}
-}
-
 func TestIntDivide(t *testing.T) {
-	actual1q, actual1r := Divide(10, 2)
+	actual1q, actual1r := IntDivide(10, 2)
 	expected1q, expected1r := 5, 0
 
 	if !(reflect.DeepEqual(actual1q, expected1q)) {
@@ -124,14 +153,14 @@ func TestEven(t *testing.T) {
 }
 
 func TestAdd(t *testing.T) {
-	actual1 := add(testArr1, testArr2)
+	actual1 := Add(testArr1, testArr2)
 	expected1 := []bool{false, false, false, true}
 
 	if !(reflect.DeepEqual(actual1, expected1)) {
 		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
 	}
 
-	actual2 := add([]bool{false, true}, add([]bool{false}, []bool{false}))
+	actual2 := Add([]bool{false, true}, Add([]bool{false}, []bool{false}))
 	expected2 := []bool{false, true}
 
 	if !(reflect.DeepEqual(actual2, expected2)) {
@@ -140,14 +169,14 @@ func TestAdd(t *testing.T) {
 }
 
 func TestSub(t *testing.T) {
-	actual1, true := sub(testArr1, testArr2)
+	actual1, true := Sub(testArr1, testArr2)
 	expected1 := []bool{false, false, true}
 
 	if !(reflect.DeepEqual(actual1, expected1)) {
 		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
 	}
 
-	actual2, false := sub(testArr3, testArr1)
+	actual2, false := Sub(testArr3, testArr1)
 	expected2 := []bool{true, false, true, true, true, true, true}
 
 	if !(reflect.DeepEqual(actual2, expected2)) {
@@ -188,14 +217,14 @@ func TestNextCarry(t *testing.T) {
 }
 
 func TestMult(t *testing.T) {
-	actual1 := mult(testArr4, testArr1)
+	actual1 := Mult(testArr4, testArr1)
 	expected1 := []bool{false}
 
 	if !(reflect.DeepEqual(actual1, expected1)) {
 		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
 	}
 
-	actual2 := mult(testArr1, testArr2)
+	actual2 := Mult(testArr1, testArr2)
 	expected2 := []bool{false, false, true, true}
 
 	if !(reflect.DeepEqual(actual2, expected2)) {
@@ -236,7 +265,7 @@ func TestBin2Dec(t *testing.T) {
 }
 
 func TestDivide(t *testing.T) {
-	actual1a, actual1b := divide(testArr2, testArr1)
+	actual1a, actual1b := Divide(testArr2, testArr1)
 	expected1a, expected1b := []bool{true, true}, []bool{false}
 
 	if !(reflect.DeepEqual(actual1a, expected1a)) {
@@ -247,7 +276,7 @@ func TestDivide(t *testing.T) {
 		t.Errorf("Test failed: %v != %v\n", actual1b, expected1b)
 	}
 
-	actual2a, actual2b := divide(testArr3, testArr1)
+	actual2a, actual2b := Divide(testArr3, testArr1)
 	expected2a, expected2b := []bool{true, true, true, true, true, true}, []bool{true}
 
 	if !(reflect.DeepEqual(actual2a, expected2a)) {
@@ -260,14 +289,14 @@ func TestDivide(t *testing.T) {
 }
 
 func TestExp(t *testing.T) {
-	actual1 := exp(testArr4, testArr1)
+	actual1 := Exp(testArr4, testArr1)
 	expected1 := []bool{false}
 
 	if !(reflect.DeepEqual(actual1, expected1)) {
 		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
 	}
 
-	actual2 := exp(testArr1, testArr2)
+	actual2 := Exp(testArr1, testArr2)
 	expected2 := []bool{false, false, false, false, false, false, true}
 
 	if !(reflect.DeepEqual(actual2, expected2)) {
@@ -276,14 +305,14 @@ func TestExp(t *testing.T) {
 }
 
 func TestEgcd(t *testing.T) {
-	_, _, actual1, _ := egcd(testArr3, testArr1)
+	_, _, actual1, _ := Egcd(testArr3, testArr1)
 	expected1 := []bool{true}
 
 	if !(reflect.DeepEqual(actual1, expected1)) {
 		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
 	}
 
-	_, _, actual2, _ := egcd(testArr1, testArr2)
+	_, _, actual2, _ := Egcd(testArr1, testArr2)
 	expected2 := []bool{false, true}
 
 	if !(reflect.DeepEqual(actual2, expected2)) {
