@@ -1,6 +1,11 @@
 package bitmath
 
-import "math/rand"
+import (
+	"fmt"
+	"math/big"
+	"math/rand"
+	"time"
+)
 
 // Useful slices
 var emptySlice = []bool{}
@@ -48,6 +53,7 @@ func Dec2bin(n int) []bool {
 	if n == 0 {
 		return []bool{false}
 	}
+
 	m := n / 2
 	A := Dec2bin(m)
 	fbit := n % 2
@@ -57,6 +63,8 @@ func Dec2bin(n int) []bool {
 func Bin2dec(A []bool) int {
 	if len(A) == 0 {
 		return 0
+	} else if len(A) > 64 {
+		fmt.Println("FATAL ERR: Input is greater than 64 bit, user BigBin2dec")
 	}
 
 	var val int
@@ -82,13 +90,103 @@ func Bin2dec(A []bool) int {
 	return val
 }
 
+func BigDec2bin(n big.Int) []bool {
+	if n.Cmp(new(big.Int).SetInt64(0)) == 0 {
+		return []bool{false}
+	}
+	m := new(big.Int).SetInt64(2)
+	m.Div(&n, m)
+	A := BigDec2bin(*m)
+	fbit := m
+	m.Mod(&n, m)
+	boolFBit := (fbit.Cmp(new(big.Int).SetInt64(0)) != 0)
+	return append([]bool{boolFBit}, A...)
+}
+
+func BigBin2dec(A []bool) big.Int {
+	if len(A) == 0 {
+		return *new(big.Int).SetInt64(0)
+	}
+
+	var val big.Int
+	if A[0] {
+		val = *new(big.Int).SetInt64(1)
+	} else {
+		val = *new(big.Int).SetInt64(0)
+	}
+
+	pow := new(big.Int).SetInt64(2)
+	for i := 1; i < len(A); i++ {
+		var currVal big.Int
+		if A[i] {
+			currVal = *new(big.Int).SetInt64(1)
+		} else {
+			currVal = *new(big.Int).SetInt64(0)
+		}
+
+		temp := new(big.Int).SetInt64(0)
+		val.Add(&val, temp.Mul(pow, &currVal))
+		pow.Mul(pow, new(big.Int).SetInt64(2))
+	}
+
+	return val
+}
+
 // --- Binary Operations --
+
+// --- Binary Operations --
+func RSAKeygen(nBits []bool, confidence []bool) (rsaD, rsaE, rsaN []bool) {
+	var rsaP []bool
+	var rsaQ []bool
+
+	rsaP = NBitPrime(div2(nBits), confidence)
+	rsaQ = NBitPrime(div2(nBits), confidence)
+	rsaN = Mult(rsaP, rsaQ)
+	temp1, _ := Sub(rsaP, oneSlice)
+	temp2, _ := Sub(rsaQ, oneSlice)
+	thOfN := Mult(temp1, temp2)
+	rsaE = []bool{true, true} // 3
+	// Make sure E is relatively prime with theOfN
+	_, r := Divide(thOfN, rsaE)
+	if compare(r, zeroSlice) == 0 {
+		rsaE = []bool{true, true, true} // 7
+		_, r = Divide(thOfN, rsaE)
+		if compare(r, zeroSlice) == 0 {
+			lessBits, _ := Sub(nBits, []bool{false, true}) // Simplest way to ensure e < thOfN
+			rsaE = NBitPrime(lessBits, confidence)
+			_, r = Divide(thOfN, rsaE)
+
+			for compare(r, zeroSlice) == 0 {
+				rsaE = NBitPrime(lessBits, confidence)
+				_, r = Divide(thOfN, rsaE)
+			}
+		}
+	}
+
+	rsaD = ModInv(rsaE, thOfN)
+
+	return rsaD, rsaE, rsaN
+}
+
+func RSAEnc(msg, rsaE, rsaN []bool) (encMsg []bool) {
+	_, encMsg = Divide(Exp(msg, rsaE), rsaN)
+	return encMsg
+}
+
+func RSADec(encMsg, rsaD, rsaN []bool) (msg []bool) {
+	_, msg = Divide(Exp(encMsg, rsaD), rsaN)
+	return msg
+}
 
 func NBitPrime(n []bool, confidence []bool) (prime []bool) {
 	for isPrime := false; !isPrime; {
+		// Seed the random number generator
+		s1 := rand.NewSource(time.Now().UnixNano())
+		seedRand := rand.New(s1)
+
 		prime = make([]bool, 0)
 		for i := zeroSlice; compare(i, n) == 2; i = Add(i, oneSlice) {
-			randbit := (rand.Intn(2) == 1)
+			randbit := (seedRand.Intn(2) == 1)
 			prime = append(prime, randbit)
 		}
 
@@ -99,6 +197,20 @@ func NBitPrime(n []bool, confidence []bool) (prime []bool) {
 	}
 
 	return prime
+}
+
+func ModInv(a []bool, n []bool) (inv []bool) {
+	x, _, d, isNegative := Egcd(a, n)
+	if compare(d, oneSlice) != 0 {
+		return zeroSlice
+	}
+	quot, inv := Divide(x, n) // mod
+	if !isNegative {
+		return inv
+	}
+
+	inv, _ = Sub(Mult(Add(quot, oneSlice), n), x)
+	return inv
 }
 
 func PrimalityThree(n []bool, confidence []bool) (isPrime bool) {
@@ -134,10 +246,13 @@ func primality(n []bool) (isPrime bool) {
 
 func randBin(min []bool, max []bool) (randNum []bool) {
 	randNum = make([]bool, len(max))
+	// Seed the random number generator
+	s1 := rand.NewSource(time.Now().UnixNano())
+	seedRand := rand.New(s1)
 
 	for i := range max {
 		// Set all bits in rand to random bools (gen number 0/1 and then cast to bool)
-		randbit := (rand.Intn(2) == 1)
+		randbit := (seedRand.Intn(2) == 1)
 		randNum[i] = randbit
 	}
 
@@ -174,13 +289,9 @@ func Egcd(a []bool, b []bool) (x []bool, y []bool, d []bool, isNegative bool) {
 	}
 
 	q, r := Divide(a, b)
-	x, y, d, isNegative = Egcd(b, r)
-	if isNegative {
-		x = Add(x, Mult(q, y))
-		isNegative = false
-	} else {
-		x, isNegative = Sub(x, Mult(q, y))
-	}
+	x, y, d, isNegative = Egcd(b, r) // in this case isNegative refers to y
+	x = Add(x, Mult(q, y))
+	isNegative = !isNegative
 	return y, x, d, isNegative
 }
 
