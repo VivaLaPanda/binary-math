@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	bm "github.com/vivalapanda/binary-math/bitmath"
+	bm "github.com/VivaLaPanda/binary-math/bitmath"
 )
 
 func main() {
