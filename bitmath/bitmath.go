@@ -1,5 +1,12 @@
 package bitmath
 
+import (
+	"fmt"
+	"math/big"
+	"math/rand"
+	"time"
+)
+
 // Useful slices
 var emptySlice = []bool{}
 var zeroSlice = []bool{false}
@@ -7,57 +14,24 @@ var oneSlice = []bool{true}
 
 // Problems
 
-func ProblemOne(a []bool, b []bool, c []bool, d []bool) (diff []bool, isNegative bool) {
-	aToTheB := exp(a, b)
-	cToTheD := exp(c, d)
-	return sub(aToTheB, cToTheD)
-}
-
-func ProblemTwo(a []bool, b []bool, c []bool, d []bool) (q []bool, r []bool) {
-	aToTheB := exp(a, b)
-	cToTheD := exp(c, d)
-
-	return divide(aToTheB, cToTheD)
-}
-
-func ProblemThree(a []bool) (numerator []bool, denominator []bool) {
-	numerator, denominator = fractalSum(oneSlice, oneSlice, a)
-
-	_, _, reducer, _ := egcd(numerator, denominator)
-
-	numerator, _ = divide(numerator, reducer)
-	denominator, _ = divide(denominator, reducer)
-
-	return numerator, denominator
-}
-
-func fractalSum(currentDenom []bool, commonDenom []bool, a []bool) (numeratorSum []bool, finalDenom []bool) {
-	commonDenom = mult(commonDenom, currentDenom)
-	if compare(currentDenom, a) != 0 {
-		numeratorSum, finalDenom = fractalSum(add(currentDenom, oneSlice), commonDenom, a)
-	} else {
-		numeratorSum = zeroSlice
-		finalDenom = commonDenom
-	}
-	numerator, _ := divide(finalDenom, currentDenom)
-	numeratorSum = add(numeratorSum, numerator)
-
-	return numeratorSum, finalDenom
-}
-
+//
 // Actual core computations
-func Mult(X int, Y int) int {
+//
+
+// --- Integer Operations --
+
+func IntMult(X int, Y int) int {
 	X1 := Dec2bin(X)
 	X2 := Dec2bin(Y)
-	return Bin2dec(mult(X1, X2))
+	return Bin2dec(Mult(X1, X2))
 }
 
-func Add(A int, B int) int {
-	return Bin2dec(add(Dec2bin(A), Dec2bin(B)))
+func IntAdd(A int, B int) int {
+	return Bin2dec(Add(Dec2bin(A), Dec2bin(B)))
 }
 
-func Sub(A int, B int) (diff int) {
-	binDiff, isNegative := sub(Dec2bin(A), Dec2bin(B))
+func IntSub(A int, B int) (diff int) {
+	binDiff, isNegative := Sub(Dec2bin(A), Dec2bin(B))
 	diff = Bin2dec(binDiff)
 	if isNegative {
 		diff = -1 * diff
@@ -66,12 +40,12 @@ func Sub(A int, B int) (diff int) {
 	return diff
 }
 
-func Exp(A int, B int) int {
-	return Bin2dec(exp(Dec2bin(A), Dec2bin(B)))
+func IntExp(A int, B int) int {
+	return Bin2dec(Exp(Dec2bin(A), Dec2bin(B)))
 }
 
-func Divide(X int, Y int) (int, int) {
-	q, r := divide(Dec2bin(X), Dec2bin(Y))
+func IntDivide(X int, Y int) (int, int) {
+	q, r := Divide(Dec2bin(X), Dec2bin(Y))
 	return Bin2dec(q), Bin2dec(r)
 }
 
@@ -79,6 +53,7 @@ func Dec2bin(n int) []bool {
 	if n == 0 {
 		return []bool{false}
 	}
+
 	m := n / 2
 	A := Dec2bin(m)
 	fbit := n % 2
@@ -88,6 +63,8 @@ func Dec2bin(n int) []bool {
 func Bin2dec(A []bool) int {
 	if len(A) == 0 {
 		return 0
+	} else if len(A) > 64 {
+		fmt.Println("FATAL ERR: Input is greater than 64 bit, user BigBin2dec")
 	}
 
 	var val int
@@ -113,35 +90,208 @@ func Bin2dec(A []bool) int {
 	return val
 }
 
+func BigDec2bin(n big.Int) []bool {
+	if n.Cmp(new(big.Int).SetInt64(0)) == 0 {
+		return []bool{false}
+	}
+	m := new(big.Int).SetInt64(2)
+	m.Div(&n, m)
+	A := BigDec2bin(*m)
+	fbit := m
+	m.Mod(&n, m)
+	boolFBit := (fbit.Cmp(new(big.Int).SetInt64(0)) != 0)
+	return append([]bool{boolFBit}, A...)
+}
+
+func BigBin2dec(A []bool) big.Int {
+	if len(A) == 0 {
+		return *new(big.Int).SetInt64(0)
+	}
+
+	var val big.Int
+	if A[0] {
+		val = *new(big.Int).SetInt64(1)
+	} else {
+		val = *new(big.Int).SetInt64(0)
+	}
+
+	pow := new(big.Int).SetInt64(2)
+	for i := 1; i < len(A); i++ {
+		var currVal big.Int
+		if A[i] {
+			currVal = *new(big.Int).SetInt64(1)
+		} else {
+			currVal = *new(big.Int).SetInt64(0)
+		}
+
+		temp := new(big.Int).SetInt64(0)
+		val.Add(&val, temp.Mul(pow, &currVal))
+		pow.Mul(pow, new(big.Int).SetInt64(2))
+	}
+
+	return val
+}
+
+// --- Binary Operations --
+
+// --- Binary Operations --
+func RSAKeygen(nBits []bool, confidence []bool) (rsaD, rsaE, rsaN []bool) {
+	var rsaP []bool
+	var rsaQ []bool
+
+	rsaP = NBitPrime(div2(nBits), confidence)
+	rsaQ = NBitPrime(div2(nBits), confidence)
+	rsaN = Mult(rsaP, rsaQ)
+	temp1, _ := Sub(rsaP, oneSlice)
+	temp2, _ := Sub(rsaQ, oneSlice)
+	thOfN := Mult(temp1, temp2)
+	rsaE = []bool{true, true} // 3
+	// Make sure E is relatively prime with theOfN
+	_, r := Divide(thOfN, rsaE)
+	if compare(r, zeroSlice) == 0 {
+		rsaE = []bool{true, true, true} // 7
+		_, r = Divide(thOfN, rsaE)
+		if compare(r, zeroSlice) == 0 {
+			lessBits, _ := Sub(nBits, []bool{false, true}) // Simplest way to ensure e < thOfN
+			rsaE = NBitPrime(lessBits, confidence)
+			_, r = Divide(thOfN, rsaE)
+
+			for compare(r, zeroSlice) == 0 {
+				rsaE = NBitPrime(lessBits, confidence)
+				_, r = Divide(thOfN, rsaE)
+			}
+		}
+	}
+
+	rsaD = ModInv(rsaE, thOfN)
+
+	return rsaD, rsaE, rsaN
+}
+
+func RSAEnc(msg, rsaE, rsaN []bool) (encMsg []bool) {
+	_, encMsg = Divide(Exp(msg, rsaE), rsaN)
+	return encMsg
+}
+
+func RSADec(encMsg, rsaD, rsaN []bool) (msg []bool) {
+	_, msg = Divide(Exp(encMsg, rsaD), rsaN)
+	return msg
+}
+
+func NBitPrime(n []bool, confidence []bool) (prime []bool) {
+	for isPrime := false; !isPrime; {
+		// Seed the random number generator
+		s1 := rand.NewSource(time.Now().UnixNano())
+		seedRand := rand.New(s1)
+
+		prime = make([]bool, 0)
+		for i := zeroSlice; compare(i, n) == 2; i = Add(i, oneSlice) {
+			randbit := (seedRand.Intn(2) == 1)
+			prime = append(prime, randbit)
+		}
+
+		prime = prime[2:]
+		prime = append(append(oneSlice, prime...), oneSlice...)
+
+		isPrime = PrimalityThree(prime, confidence)
+	}
+
+	return prime
+}
+
+func ModInv(a []bool, n []bool) (inv []bool) {
+	x, _, d, isNegative := Egcd(a, n)
+	if compare(d, oneSlice) != 0 {
+		return zeroSlice
+	}
+	quot, inv := Divide(x, n) // mod
+	if !isNegative {
+		return inv
+	}
+
+	inv, _ = Sub(Mult(Add(quot, oneSlice), n), x)
+	return inv
+}
+
+func PrimalityThree(n []bool, confidence []bool) (isPrime bool) {
+	_, divisible2 := Divide(n, Dec2bin(2))
+	_, divisible3 := Divide(n, Dec2bin(3))
+	_, divisible5 := Divide(n, Dec2bin(5))
+	_, divisible7 := Divide(n, Dec2bin(7))
+
+	if zero(divisible2) || zero(divisible3) || zero(divisible5) || zero(divisible7) {
+		return false
+	}
+
+	return primalityTwo(n, confidence)
+}
+
+func primalityTwo(n []bool, confidence []bool) (isPrime bool) {
+	for i := zeroSlice; compare(i, confidence) == 2; i = Add(i, oneSlice) {
+		if !primality(n) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func primality(n []bool) (isPrime bool) {
+	a := randBin(oneSlice, n)
+	nMinusOne, _ := Sub(n, oneSlice)
+	_, r := Divide(Exp(a, nMinusOne), n)
+
+	return compare(r, oneSlice) == 0
+}
+
+func randBin(min []bool, max []bool) (randNum []bool) {
+	randNum = make([]bool, len(max))
+	// Seed the random number generator
+	s1 := rand.NewSource(time.Now().UnixNano())
+	seedRand := rand.New(s1)
+
+	for i := range max {
+		// Set all bits in rand to random bools (gen number 0/1 and then cast to bool)
+		randbit := (seedRand.Intn(2) == 1)
+		randNum[i] = randbit
+	}
+
+	// Ensure the number is smaller than max
+	_, randNum = Divide(randNum, max)
+
+	// If the number is smaller than min (really unlikely) just recalc
+	if compare(randNum, min) == 2 {
+		return randBin(min, max)
+	} else {
+		return randNum
+	}
+}
+
 // Computes x^y
-func exp(x []bool, y []bool) []bool {
+func Exp(x []bool, y []bool) []bool {
 	if sliceEq(y, zeroSlice) || sliceEq(y, emptySlice) {
 		return oneSlice
 	}
 
-	z := exp(x, div2(y))
+	z := Exp(x, div2(y))
 	if even(y) {
-		return mult(z, z)
+		return Mult(z, z)
 	}
 
-	return mult(x, mult(z, z))
+	return Mult(x, Mult(z, z))
 }
 
 // Takes a and b and finds integers s.t. d = gcd(a,b) and ax + by = d
 // Currently cannot distriguish negative answers properly.
-func egcd(a []bool, b []bool) (x []bool, y []bool, d []bool, isNegative bool) {
+func Egcd(a []bool, b []bool) (x []bool, y []bool, d []bool, isNegative bool) {
 	if zero(b) {
 		return oneSlice, zeroSlice, a, false
 	}
 
-	q, r := divide(a, b)
-	x, y, d, isNegative = egcd(b, r)
-	if isNegative {
-		x = add(x, mult(q, y))
-		isNegative = false
-	} else {
-		x, isNegative = sub(x, mult(q, y))
-	}
+	q, r := Divide(a, b)
+	x, y, d, isNegative = Egcd(b, r) // in this case isNegative refers to y
+	x = Add(x, Mult(q, y))
+	isNegative = !isNegative
 	return y, x, d, isNegative
 }
 
@@ -155,115 +305,25 @@ func egcd(a []bool, b []bool) (x []bool, y []bool, d []bool, isNegative bool) {
 // 	return Bin2dec1(trim(temp1)) + binDecMap(trim(temp2))
 // }
 
-func divide(X []bool, Y []bool) (q []bool, r []bool) {
+func Divide(X []bool, Y []bool) (q []bool, r []bool) {
 	if zero(X) {
 		return zeroSlice, zeroSlice
 	}
 
-	q, r = divide(div2(X), Y)
-	q = add(q, q)
-	r = add(r, r)
+	q, r = Divide(div2(X), Y)
+	q = Add(q, q)
+	r = Add(r, r)
 	if !even(X) {
-		r = add(r, oneSlice)
+		r = Add(r, oneSlice)
 	}
 	if !(compare(r, Y) == 2) {
-		r, _ = sub(r, Y)
-		q = add(q, oneSlice)
+		r, _ = Sub(r, Y)
+		q = Add(q, oneSlice)
 	}
 	return q, r
 }
 
-// Faster than deepeq for production code
-func sliceEq(a []bool, b []bool) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	for i, aElem := range a {
-		if aElem != b[i] {
-			return false
-		}
-	}
-
-	return true
-}
-
-// DEPRECATED
-// func binDecMap(v []bool) int {
-// 	switch {
-// 	case sliceEq(v, []bool{}):
-// 		return '0'
-// 	case sliceEq(v, []bool{false}):
-// 		return '0'
-// 	case sliceEq(v, []bool{true}):
-// 		return '1'
-// 	case sliceEq(v, []bool{false, true}):
-// 		return '2'
-// 	case sliceEq(v, []bool{true, true}):
-// 		return '3'
-// 	case sliceEq(v, []bool{false, false, true}):
-// 		return '4'
-// 	case sliceEq(v, []bool{true, false, true}):
-// 		return '5'
-// 	case sliceEq(v, []bool{false, true, true}):
-// 		return '6'
-// 	case sliceEq(v, []bool{true, true, true}):
-// 		return '7'
-// 	case sliceEq(v, []bool{false, false, false, true}):
-// 		return '8'
-// 	case sliceEq(v, []bool{true, false, false, true}):
-// 		return '9'
-// 	}
-//
-// 	panic("FATAL ERROR: Map reached unreachable code.")
-// }
-
-func equalLengthPad(ARef []bool, BRef []bool) (A []bool, B []bool, N int) {
-	// Make a copy of the slices passed in
-	A = make([]bool, len(ARef))
-	copy(A, ARef)
-	B = make([]bool, len(BRef))
-	copy(B, BRef)
-
-	// Padding to equal length
-	n := len(A)
-	m := len(B)
-	if n < m {
-		dif := len(B) - len(A)
-		for i := 0; i < dif; i++ {
-			A = append(A, false)
-		}
-	} else {
-		dif := len(A) - len(B)
-		for i := 0; i < dif; i++ {
-			B = append(B, false)
-		}
-	}
-
-	if n > m {
-		N = n
-	} else {
-		N = m
-	}
-
-	return A, B, N
-}
-
-func twosCompliment(ARef []bool) (A []bool) {
-	// Make a copy of the slices passed in
-	A = make([]bool, len(ARef))
-	copy(A, ARef)
-
-	// 2's compliment
-	// Inverting B
-	for i, elem := range A {
-		A[i] = !elem
-	}
-	// Add 1
-	return add(A, oneSlice)
-}
-
-func sub(ARef []bool, BRef []bool) (diff []bool, isNegative bool) {
+func Sub(ARef []bool, BRef []bool) (diff []bool, isNegative bool) {
 	A, B, n := equalLengthPad(ARef, BRef)
 
 	// Add one extra 0 in front of each to make sure 2compliment has sign bit
@@ -276,7 +336,7 @@ func sub(ARef []bool, BRef []bool) (diff []bool, isNegative bool) {
 	}
 
 	B = twosCompliment(B)
-	diff = add(A, B)
+	diff = Add(A, B)
 
 	// Get rid of any overflow if it happened
 	diff = diff[:n+1]
@@ -286,6 +346,39 @@ func sub(ARef []bool, BRef []bool) (diff []bool, isNegative bool) {
 	} else {
 		return trim(diff), false
 	}
+}
+
+// Modified egyptian algorithm
+func Mult(X []bool, Y []bool) []bool {
+	if zero(Y) {
+		return zeroSlice
+	} else if zero(X) {
+		return zeroSlice
+	}
+
+	Z := Mult(X, div2(Y))
+
+	if even(Y) {
+		return Add(Z, Z)
+	}
+
+	return Add(X, Add(Z, Z))
+}
+
+func Add(A []bool, B []bool) []bool {
+	A1, B1, N := equalLengthPad(A, B)
+
+	C := []bool{}
+	carry := false
+	for i := 0; i < N; i++ {
+		C = append(C, excOr(A1[i], B1[i], carry))
+		carry = nextcarry(carry, A1[i], B1[i])
+	}
+	if carry == true {
+		C = append(C, carry)
+	}
+
+	return C
 }
 
 func compare(A []bool, B []bool) int {
@@ -339,23 +432,6 @@ func shift(A []bool, n int) []bool {
 	return append(zeroSlice, shift(A, n-1)...)
 }
 
-// Modified egyptian algorithm
-func mult(X []bool, Y []bool) []bool {
-	if zero(Y) {
-		return zeroSlice
-	} else if zero(X) {
-		return zeroSlice
-	}
-
-	Z := mult(X, div2(Y))
-
-	if even(Y) {
-		return add(Z, Z)
-	}
-
-	return add(X, add(Z, Z))
-}
-
 func zero(X []bool) bool {
 	if len(X) == 0 {
 		return true
@@ -386,22 +462,6 @@ func even(X []bool) bool {
 	return false
 }
 
-func add(A []bool, B []bool) []bool {
-	A1, B1, N := equalLengthPad(A, B)
-
-	C := []bool{}
-	carry := false
-	for i := 0; i < N; i++ {
-		C = append(C, excOr(A1[i], B1[i], carry))
-		carry = nextcarry(carry, A1[i], B1[i])
-	}
-	if carry == true {
-		C = append(C, carry)
-	}
-
-	return C
-}
-
 func excOr(a bool, b bool, c bool) bool {
 	return (a != (b != c))
 }
@@ -412,4 +472,64 @@ func nextcarry(a bool, b bool, c bool) bool {
 	}
 
 	return false
+}
+
+// Faster than deepeq for production code
+func sliceEq(a []bool, b []bool) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for i, aElem := range a {
+		if aElem != b[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
+func equalLengthPad(ARef []bool, BRef []bool) (A []bool, B []bool, N int) {
+	// Make a copy of the slices passed in
+	A = make([]bool, len(ARef))
+	copy(A, ARef)
+	B = make([]bool, len(BRef))
+	copy(B, BRef)
+
+	// Padding to equal length
+	n := len(A)
+	m := len(B)
+	if n < m {
+		dif := len(B) - len(A)
+		for i := 0; i < dif; i++ {
+			A = append(A, false)
+		}
+	} else {
+		dif := len(A) - len(B)
+		for i := 0; i < dif; i++ {
+			B = append(B, false)
+		}
+	}
+
+	if n > m {
+		N = n
+	} else {
+		N = m
+	}
+
+	return A, B, N
+}
+
+func twosCompliment(ARef []bool) (A []bool) {
+	// Make a copy of the slices passed in
+	A = make([]bool, len(ARef))
+	copy(A, ARef)
+
+	// 2's compliment
+	// Inverting B
+	for i, elem := range A {
+		A[i] = !elem
+	}
+	// Add 1
+	return Add(A, oneSlice)
 }
