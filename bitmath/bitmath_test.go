@@ -19,7 +19,7 @@ var rsaTests = []struct {
 
 func TestRsa(t *testing.T) {
 	for _, test := range rsaTests {
-		rsaD, rsaE, rsaN := RSAKeygen(Dec2bin(10), Dec2bin(200))
+		rsaD, rsaE, rsaN := RSAKeygen(Dec2bin(10), Dec2bin(20))
 		encMsg := Bin2dec(RSAEnc(Dec2bin(test.in1), rsaE, rsaN))
 		decMsg := Bin2dec(RSADec(Dec2bin(encMsg), rsaD, rsaN))
 		if test.in1 != decMsg {
