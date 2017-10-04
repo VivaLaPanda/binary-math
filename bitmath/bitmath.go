@@ -147,18 +147,18 @@ func RSAKeygen(nBits []bool, confidence []bool) (rsaD, rsaE, rsaN []bool) {
 	thOfN := Mult(temp1, temp2)
 	rsaE = []bool{true, true} // 3
 	// Make sure E is relatively prime with theOfN
-	_, r := Divide(thOfN, rsaE)
-	if compare(r, zeroSlice) == 0 {
+	_, _, d, _ := Egcd(thOfN, rsaE)
+	if compare(d, oneSlice) != 0 {
 		rsaE = []bool{true, true, true} // 7
-		_, r = Divide(thOfN, rsaE)
-		if compare(r, zeroSlice) == 0 {
+		_, _, d, _ := Egcd(thOfN, rsaE)
+		if compare(d, oneSlice) != 0 {
 			lessBits, _ := Sub(nBits, []bool{false, true}) // Simplest way to ensure e < thOfN
 			rsaE = NBitPrime(lessBits, confidence)
-			_, r = Divide(thOfN, rsaE)
+			_, _, d, _ := Egcd(thOfN, rsaE)
 
-			for compare(r, zeroSlice) == 0 {
+			for compare(d, oneSlice) != 0 {
 				rsaE = NBitPrime(lessBits, confidence)
-				_, r = Divide(thOfN, rsaE)
+				_, _, d, _ = Egcd(thOfN, rsaE)
 			}
 		}
 	}
