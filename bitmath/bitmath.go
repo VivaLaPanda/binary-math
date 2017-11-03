@@ -12,12 +12,6 @@ var emptySlice = []bool{}
 var zeroSlice = []bool{false}
 var oneSlice = []bool{true}
 
-// Problems
-
-//
-// Actual core computations
-//
-
 // --- Integer Operations --
 
 func IntMult(X int, Y int) int {
