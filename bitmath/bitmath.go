@@ -12,12 +12,6 @@ var emptySlice = []bool{}
 var zeroSlice = []bool{false}
 var oneSlice = []bool{true}
 
-// Problems
-
-//
-// Actual core computations
-//
-
 // --- Integer Operations --
 
 func IntMult(X int, Y int) int {
@@ -98,7 +92,7 @@ func BigDec2bin(n big.Int) []bool {
 	m.Div(&n, m)
 	A := BigDec2bin(*m)
 	fbit := m
-	m.Mod(&n, m)
+	m.Mod(&n, new(big.Int).SetInt64(2))
 	boolFBit := (fbit.Cmp(new(big.Int).SetInt64(0)) != 0)
 	return append([]bool{boolFBit}, A...)
 }

@@ -2,6 +2,7 @@ package bitmath
 
 import (
 	"math"
+	"math/big"
 	"reflect"
 	"testing"
 )
@@ -335,6 +336,36 @@ func TestBin2Dec(t *testing.T) {
 	expected2 := 0
 
 	if !(reflect.DeepEqual(actual2, expected2)) {
+		t.Errorf("Test failed: %v != %v\n", actual2, expected2)
+	}
+}
+
+func TestBigDec2Bin(t *testing.T) {
+	actual1 := BigDec2bin(*new(big.Int).SetInt64(4))
+	expected1 := []bool{false, false, true, false}
+
+	if !(reflect.DeepEqual(actual1, expected1)) {
+		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
+	}
+
+	actual2 := BigDec2bin(*new(big.Int).SetInt64(0))
+	expected2 := []bool{false}
+
+	if !(reflect.DeepEqual(actual2, expected2)) {
+		t.Errorf("Test failed: %v != %v\n", actual2, expected2)
+	}
+}
+
+func TestBigBin2Dec(t *testing.T) {
+	actual1 := BigBin2dec([]bool{false, false, true})
+	expected1 := new(big.Int).SetInt64(4)
+	if actual1.Cmp(expected1) != 0 {
+		t.Errorf("Test failed: %v != %v\n", actual1, expected1)
+	}
+
+	actual2 := BigBin2dec([]bool{false})
+	expected2 := new(big.Int).SetInt64(0)
+	if actual2.Cmp(expected2) != 0 {
 		t.Errorf("Test failed: %v != %v\n", actual2, expected2)
 	}
 }
